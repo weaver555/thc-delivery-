@@ -1,0 +1,606 @@
+  <!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+>
+
+<title>THC Rider</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+</head>
+
+
+<body class="bg-gray-100 min-h-screen">
+
+
+<div class="max-w-lg mx-auto p-4">
+
+
+<h1 class="text-3xl font-black text-green-600 py-6">
+THC RIDER
+</h1>
+
+
+<!-- LOGIN -->
+
+<div
+id="loginBox"
+class="bg-white p-5 rounded-2xl shadow"
+>
+
+<h2 class="text-xl font-bold mb-4">
+Rider Login
+</h2>
+
+
+<input
+id="email"
+type="email"
+class="w-full p-3 border rounded-xl mb-3"
+placeholder="Email"
+>
+
+
+<input
+id="password"
+type="password"
+class="w-full p-3 border rounded-xl mb-4"
+placeholder="Password"
+>
+
+
+<button
+id="loginBtn"
+class="w-full bg-green-600 text-white p-3 rounded-xl font-bold"
+>
+SIGN IN
+</button>
+
+
+<p
+id="error"
+class="text-red-600 text-sm mt-3"
+></p>
+
+</div>
+
+
+<!-- DASHBOARD -->
+
+<div
+id="dashboard"
+class="hidden"
+>
+
+
+<div class="flex justify-between items-center my-5">
+
+<h2 class="text-xl font-bold">
+MY DELIVERIES
+</h2>
+
+
+<button
+id="logoutBtn"
+class="text-red-600 font-bold"
+>
+SIGN OUT
+</button>
+
+</div>
+
+
+<!-- COUNTERS -->
+
+<div class="grid grid-cols-3 gap-2 mb-5">
+
+<div class="bg-white p-3 rounded-xl text-center shadow">
+
+<div
+id="totalCount"
+class="text-2xl font-black"
+>
+0
+</div>
+
+<div class="text-xs text-gray-500">
+ACTIVE
+</div>
+
+</div>
+
+
+<div class="bg-white p-3 rounded-xl text-center shadow">
+
+<div
+id="waitingCount"
+class="text-2xl font-black"
+>
+0
+</div>
+
+<div class="text-xs text-gray-500">
+WAITING
+</div>
+
+</div>
+
+
+<div class="bg-white p-3 rounded-xl text-center shadow">
+
+<div
+id="wayCount"
+class="text-2xl font-black"
+>
+0
+</div>
+
+<div class="text-xs text-gray-500">
+ON THE WAY
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="customerList"
+class="space-y-4"
+></div>
+
+
+</div>
+
+</div>
+
+
+<script>
+
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyC57agn1E9fiWBY1ZlsH4ggKsKsQAwBoQ",
+
+authDomain:
+"thc-rider-tracker.firebaseapp.com",
+
+databaseURL:
+"https://thc-rider-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId:
+"thc-rider-tracker",
+
+storageBucket:
+"thc-rider-tracker.appspot.com",
+
+messagingSenderId:
+"1020694020459",
+
+appId:
+"1:1020694020459:web:3abf81418fec72af168c2e"
+
+};
+
+
+firebase.initializeApp(firebaseConfig);
+
+
+const auth =
+firebase.auth();
+
+
+const db =
+firebase.database();
+
+
+// LOGIN
+
+document
+.getElementById("loginBtn")
+.addEventListener(
+"click",
+async () => {
+
+
+const email =
+document
+.getElementById("email")
+.value
+.trim();
+
+
+const password =
+document
+.getElementById("password")
+.value;
+
+
+try {
+
+
+await auth.signInWithEmailAndPassword(
+email,
+password
+);
+
+
+}
+catch(error) {
+
+
+document
+.getElementById("error")
+.textContent =
+error.message;
+
+
+}
+
+});
+
+
+// LOGOUT
+
+document
+.getElementById("logoutBtn")
+.addEventListener(
+"click",
+() => {
+
+auth.signOut();
+
+});
+
+
+// AUTH
+
+auth.onAuthStateChanged(
+user => {
+
+
+if (user) {
+
+
+document
+.getElementById("loginBox")
+.classList
+.add("hidden");
+
+
+document
+.getElementById("dashboard")
+.classList
+.remove("hidden");
+
+
+loadCustomers();
+
+
+}
+else {
+
+
+document
+.getElementById("loginBox")
+.classList
+.remove("hidden");
+
+
+document
+.getElementById("dashboard")
+.classList
+.add("hidden");
+
+
+}
+
+});
+
+
+// LOAD CUSTOMERS
+
+function loadCustomers() {
+
+
+db.ref("deliveries")
+.on(
+"value",
+snapshot => {
+
+
+const data =
+snapshot.val() || {};
+
+
+const list =
+document.getElementById(
+"customerList"
+);
+
+
+list.innerHTML =
+"";
+
+
+let active =
+0;
+
+let waiting =
+0;
+
+let onWay =
+0;
+
+
+Object
+.entries(data)
+.forEach(
+([key, delivery]) => {
+
+
+if (
+delivery.status ===
+"DELIVERED"
+) {
+
+return;
+
+}
+
+
+active++;
+
+
+if (
+delivery.status ===
+"WAITING"
+) {
+
+waiting++;
+
+}
+
+
+if (
+delivery.status ===
+"ON_THE_WAY"
+) {
+
+onWay++;
+
+}
+
+
+const card =
+document.createElement(
+"div"
+);
+
+
+card.className =
+"bg-white p-5 rounded-2xl shadow";
+
+
+const hasLocation =
+delivery.latitude &&
+delivery.longitude;
+
+
+const map =
+hasLocation
+?
+"https://www.google.com/maps?q=" +
+delivery.latitude +
+"," +
+delivery.longitude
+:
+"#";
+
+
+card.innerHTML = `
+
+<div class="text-xl font-black">
+
+${delivery.customerName || "Customer"}
+
+</div>
+
+
+<div class="text-sm text-gray-500 mt-1">
+
+Status:
+${delivery.status}
+
+</div>
+
+
+<div class="grid grid-cols-2 gap-2 mt-4">
+
+
+<button
+class="accept bg-green-600 text-white p-3 rounded-xl font-bold"
+>
+ACCEPT
+</button>
+
+
+<a
+href="${map}"
+target="_blank"
+class="${
+hasLocation
+?
+"bg-blue-600 text-white"
+:
+"bg-gray-200 text-gray-400 pointer-events-none"
+}
+p-3 rounded-xl font-bold text-center"
+>
+OPEN MAP
+</a>
+
+
+</div>
+
+
+<div class="grid grid-cols-2 gap-2 mt-2">
+
+
+<button
+class="onway bg-gray-900 text-white p-3 rounded-xl font-bold"
+>
+ON THE WAY
+</button>
+
+
+<button
+class="done bg-red-600 text-white p-3 rounded-xl font-bold"
+>
+DELIVERED
+</button>
+
+
+</div>
+
+`;
+
+
+list.appendChild(card);
+
+
+card
+.querySelector(".accept")
+.onclick =
+() =>
+updateStatus(
+key,
+"ACCEPTED"
+);
+
+
+card
+.querySelector(".onway")
+.onclick =
+() =>
+updateStatus(
+key,
+"ON_THE_WAY"
+);
+
+
+card
+.querySelector(".done")
+.onclick =
+() =>
+updateStatus(
+key,
+"DELIVERED"
+);
+
+
+});
+
+
+document
+.getElementById("totalCount")
+.textContent =
+active;
+
+
+document
+.getElementById("waitingCount")
+.textContent =
+waiting;
+
+
+document
+.getElementById("wayCount")
+.textContent =
+onWay;
+
+
+});
+
+}
+
+
+// UPDATE STATUS
+
+function updateStatus(
+key,
+status
+) {
+
+
+const update = {
+
+status:
+status
+
+};
+
+
+if (
+status ===
+"ACCEPTED"
+) {
+
+update.riderId =
+auth.currentUser.uid;
+
+update.acceptedAt =
+firebase.database.ServerValue.TIMESTAMP;
+
+}
+
+
+if (
+status ===
+"ON_THE_WAY"
+) {
+
+update.onTheWayAt =
+firebase.database.ServerValue.TIMESTAMP;
+
+}
+
+
+if (
+status ===
+"DELIVERED"
+) {
+
+update.deliveredAt =
+firebase.database.ServerValue.TIMESTAMP;
+
+}
+
+
+db.ref(
+"deliveries/" +
+key
+)
+.update(update);
+
+}
+
+</script>
+
+</body>
+
+</html>
