@@ -436,13 +436,11 @@ OPEN MAP
 
 <div class="grid grid-cols-2 gap-2 mt-2">
 
-
 <button
 class="onway bg-gray-900 text-white p-3 rounded-xl font-bold"
 >
 ON THE WAY
 </button>
-
 
 <button
 class="done bg-red-600 text-white p-3 rounded-xl font-bold"
@@ -450,9 +448,37 @@ class="done bg-red-600 text-white p-3 rounded-xl font-bold"
 DELIVERED
 </button>
 
+</div>
+
+<!-- CHAT -->
+
+<div class="mt-4 border-t pt-4">
+
+<div class="text-sm font-bold mb-2">
+CHAT WITH CUSTOMER
+</div>
+
+<div
+class="chat-messages h-32 overflow-y-auto space-y-2 bg-gray-50 p-2 rounded-xl mb-2"
+>
+</div>
+
+<div class="flex gap-2">
+
+<input
+class="chat-input flex-1 p-3 border rounded-xl"
+placeholder="Type message"
+>
+
+<button
+class="chat-send bg-green-600 text-white px-4 rounded-xl font-bold"
+>
+SEND
+</button>
 
 </div>
 
+</div>
 `;
 
 
@@ -488,6 +514,7 @@ key,
 "DELIVERED"
 );
 
+setupRiderChat(key, card);
 
 });
 
@@ -513,6 +540,111 @@ onWay;
 });
 
 }
+
+  // RIDER CHAT
+
+function setupRiderChat(key, card) {
+
+    const chatRef = db.ref(
+        "deliveries/" +
+        key +
+        "/chat"
+    );
+
+    const messages =
+        card.querySelector(".chat-messages");
+
+    const input =
+        card.querySelector(".chat-input");
+
+    const send =
+        card.querySelector(".chat-send");
+
+
+    // RECEIVE MESSAGES
+
+    chatRef.off("value");
+
+    chatRef.on("value", snapshot => {
+
+        const data =
+            snapshot.val() || {};
+
+        messages.innerHTML = "";
+
+        Object.values(data).forEach(message => {
+
+            const messageDiv =
+                document.createElement("div");
+
+            messageDiv.className =
+                message.sender === "rider"
+                ? "bg-blue-100 p-2 rounded-xl text-sm"
+                : "bg-green-100 p-2 rounded-xl text-sm";
+
+            messageDiv.textContent =
+                (message.sender === "rider"
+                    ? "You: "
+                    : "Customer: ") +
+                message.text;
+
+            messages.appendChild(
+                messageDiv
+            );
+
+        });
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+    });
+
+
+    // SEND MESSAGE
+
+    function sendChat() {
+
+        const text =
+            input.value.trim();
+
+        if (!text) return;
+
+        chatRef.push({
+
+            sender:
+                "rider",
+
+            text:
+                text,
+
+            timestamp:
+                firebase.database.ServerValue.TIMESTAMP
+
+        });
+
+        input.value = "";
+
+    }
+
+
+    send.onclick = sendChat;
+
+
+    input.addEventListener(
+        "keypress",
+        event => {
+
+            if (event.key === "Enter") {
+
+                sendChat();
+
+            }
+
+        }
+    );
+
+}
+
 
 
 // UPDATE STATUS
