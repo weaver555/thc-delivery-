@@ -252,7 +252,8 @@ function openDelivery() {
     .classList.remove("hidden");
 
 
-    watchDelivery();
+      watchDelivery();
+    listenForMessages();
 
 }
 
@@ -471,11 +472,60 @@ document
 );
 
 
-// RECEIVE MESSAGES
+// RECEIVE CHAT MESSAGES
 
-if (deliveryKey) {
+function listenForMessages() {
 
-    openDelivery();
+    if (!deliveryKey) return;
+
+    const chatRef = db.ref(
+        "deliveries/" +
+        deliveryKey +
+        "/chat"
+    );
+
+    chatRef.off("value");
+
+    chatRef.on("value", snapshot => {
+
+        const messages =
+            snapshot.val() || {};
+
+        const container =
+            document.getElementById(
+                "messages"
+            );
+
+        container.innerHTML = "";
+
+        Object
+        .values(messages)
+        .forEach(message => {
+
+            const messageDiv =
+                document.createElement("div");
+
+            messageDiv.className =
+                message.sender === "customer"
+                ? "bg-green-100 p-2 rounded-xl text-sm"
+                : "bg-blue-100 p-2 rounded-xl text-sm";
+
+            messageDiv.textContent =
+                (message.sender === "customer"
+                    ? "You: "
+                    : "Rider: ") +
+                message.text;
+
+            container.appendChild(
+                messageDiv
+            );
+
+        });
+
+        container.scrollTop =
+            container.scrollHeight;
+
+    });
 
 }
 
