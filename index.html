@@ -1,164 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>THC Delivery</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-</head>
-
-<body class="bg-gray-100 min-h-screen">
-
-<div class="max-w-md mx-auto p-4">
-
-    <h1 class="text-3xl font-black text-green-600 py-6">
-        THC DELIVERY
-    </h1>
-
-    <!-- REQUEST -->
-    <div id="requestBox" class="bg-white p-5 rounded-2xl shadow">
-
-        <h2 class="text-xl font-bold mb-4">
-            Request a Rider
-        </h2>
-
-        <input
-            id="firstName"
-            class="w-full p-3 border rounded-xl mb-3"
-            placeholder="First Name"
-        >
-
-        <input
-            id="surname"
-            class="w-full p-3 border rounded-xl mb-4"
-            placeholder="Surname"
-        >
-
-        <button
-            id="requestBtn"
-            class="w-full bg-green-600 text-white p-3 rounded-xl font-bold"
-        >
-            REQUEST RIDER
-        </button>
-
-    </div>
-
-
-    <!-- ACTIVE DELIVERY -->
-    <div id="deliveryBox" class="hidden space-y-4">
-
-        <div class="bg-white p-5 rounded-2xl shadow text-center">
-
-            <p class="text-xs text-gray-400 font-bold">
-                DELIVERY STATUS
-            </p>
-
-            <h2
-                id="status"
-                class="text-2xl font-black mt-1"
+    <title>THC Delivery</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+        
+    </head>
+    
+    <body class="bg-gray-100 min-h-screen">
+    
+    <div class="max-w-md mx-auto p-4">
+    
+        <h1 class="text-3xl font-black text-green-600 py-6">
+            THC DELIVERY
+        </h1>
+    
+        <!-- REQUEST -->
+        <div id="requestBox" class="bg-white p-5 rounded-2xl shadow">
+    
+           <h2 class="text-xl font-bold mb-4">
+        ENTER YOUR NAME
+    </h2>
+    <p class="text-sm text-gray-500 mb-4">
+        Please enter the name that matches your order slip.
+    </p>
+            
+            <input
+                id="firstName"
+                class="w-full p-3 border rounded-xl mb-3"
+                placeholder="First Name"
             >
-                WAITING
-            </h2>
-
-            <p
-                id="statusMessage"
-                class="text-sm text-gray-500 mt-2"
+    
+            <input
+                id="surname"
+                class="w-full p-3 border rounded-xl mb-4"
+                placeholder="Surname"
             >
-                Waiting for a rider...
-            </p>
-
-        </div>
-
-
-        <!-- LOCATION -->
-        <div class="bg-white p-5 rounded-2xl shadow">
-
-            <h3 class="font-bold">
-                Your Location
-            </h3>
-
-            <p
-                id="locationMessage"
-                class="text-sm text-gray-500 my-3"
-            >
-                Location has not been shared.
-            </p>
-
+    
             <button
-                id="locationBtn"
-                class="w-full bg-blue-600 text-white p-3 rounded-xl font-bold"
+                id="requestBtn"
+                class="w-full bg-green-600 text-white p-3 rounded-xl font-bold"
             >
-                SHARE MY LOCATION
+                CHECK MY ORDER
             </button>
-
-        </div>
-
-
-        <!-- CHAT -->
-        <div
-            id="chatBox"
-            class="hidden bg-white rounded-2xl shadow p-4"
-        >
-
-            <h3 class="font-bold mb-3">
-                Message Rider
-            </h3>
-
-            <div
-                id="messages"
-                class="space-y-2 max-h-52 overflow-y-auto mb-3"
-            ></div>
-
-            <div class="flex gap-2">
-
-                <input
-                    id="messageInput"
-                    class="flex-1 p-3 border rounded-xl"
-                    placeholder="Type message"
-                >
-
-                <button
-                    id="sendBtn"
-                    class="bg-green-600 text-white px-4 rounded-xl font-bold"
-                >
-                    SEND
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<script>
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC57agn1E9fiWBY1Zls4HggsKwKsQAwBoQ",
-  authDomain: "thc-rider-tracker.firebaseapp.com",
-  databaseURL: "https://thc-rider-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "thc-rider-tracker",
-  storageBucket: "thc-rider-tracker.firebasestorage.app",
-  messagingSenderId: "1020694020459",
-  appId: "1:1020694020459:web:3abf81418fec72af168c2e"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.database();
     
+        </div>
+    
+    
+        <!-- ACTIVE DELIVERY -->
+        <div id="deliveryBox" class="hidden space-y-4">
+    
+            <div class="bg-white p-5 rounded-2xl shadow text-center">
+    
+                <p class="text-xs text-gray-400 font-bold">
+                    DELIVERY STATUS
+                </p>
+    
+                <h2
+                    id="status"
+                    class="text-2xl font-black mt-1"
+                >
+                    WAITING
+                </h2>
+    
+                <p
+                    id="statusMessage"
+                    class="text-sm text-gray-500 mt-2"
+                >
+                    Waiting for a rider...
+                </p>
+    
+            </div>
+    
+    
+            <!-- LOCATION -->
+            <div class="bg-white p-5 rounded-2xl shadow">
+    
+                <h3 class="font-bold">
+                    Your Location
+                </h3>
+    
+                <p
+                    id="locationMessage"
+                    class="text-sm text-gray-500 my-3"
+                >
+                    Location has not been shared.
+                </p>
+    
+                <button
+                    id="locationBtn"
+                    class="w-full bg-blue-600 text-white p-3 rounded-xl font-bold"
+                >
+                    SHARE MY LOCATION
+                </button>
+    
+            </div>
+    
+    
+            <!-- CHAT -->
+            <div
+                id="chatBox"
+                class="hidden bg-white rounded-2xl shadow p-4"
+            >
+    
+                <h3 class="font-bold mb-3">
+                    Message Rider
+                </h3>
+    
+                <div
+                    id="messages"
+                    class="space-y-2 max-h-52 overflow-y-auto mb-3"
+                ></div>
+    
+                <div class="flex gap-2">
+    
+                    <input
+                        id="messageInput"
+                        class="flex-1 p-3 border rounded-xl"
+                        placeholder="Type message"
+                    >
+    
+                    <button
+                        id="sendBtn"
+                        class="bg-green-600 text-white px-4 rounded-xl font-bold"
+                    >
+                        SEND
+                    </button>
+    
+                </div>
+    
+            </div>
+    
+        </div>
+    
+    </div>
+    
+    
+    <script>
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyC57agn1E9fiWBY1Zls4HggsKwKsQAwBoQ",
+      authDomain: "thc-rider-tracker.firebaseapp.com",
+      databaseURL: "https://thc-rider-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "thc-rider-tracker",
+      storageBucket: "thc-rider-tracker.firebasestorage.app",
+      messagingSenderId: "1020694020459",
+      appId: "1:1020694020459:web:3abf81418fec72af168c2e"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    
+    const auth = firebase.auth();
+    const db = firebase.database();
+        
+  // DELIVERY SESSION
+
 let deliveryKey =
     localStorage.getItem("thcDeliveryKey");
+
+let deliveredHandled = false;
 
 
 // REQUEST RIDER
@@ -176,7 +183,9 @@ document
 
     if (!first || !last) {
 
-        alert("Please enter your first name and surname.");
+        alert(
+            "Please enter your first name and surname."
+        );
 
         return;
     }
@@ -184,13 +193,52 @@ document
 
     try {
 
+        // CHECK FOR EXISTING ACTIVE DELIVERY
+
+        if (deliveryKey) {
+
+            const existingSnapshot =
+                await db.ref(
+                    "deliveries/" +
+                    deliveryKey
+                ).once("value");
+
+            const existingData =
+                existingSnapshot.val();
+
+
+            if (
+                existingData &&
+                existingData.status !== "DELIVERED"
+            ) {
+
+                openDelivery();
+
+                return;
+            }
+
+
+            // OLD DELIVERY IS GONE
+            // OR ALREADY DELIVERED
+
+            localStorage.removeItem(
+                "thcDeliveryKey"
+            );
+
+            deliveryKey = null;
+        }
+
+
+        // CUSTOMER AUTHENTICATION
+
         const login =
             await auth.signInAnonymously();
-
 
         const customerUid =
             login.user.uid;
 
+
+        // CREATE NEW DELIVERY
 
         const delivery =
             db.ref("deliveries").push();
@@ -213,6 +261,8 @@ document
         });
 
 
+        // SAVE DELIVERY KEY
+
         deliveryKey =
             delivery.key;
 
@@ -222,6 +272,8 @@ document
             deliveryKey
         );
 
+
+        // OPEN ACTIVE DELIVERY
 
         openDelivery();
 
@@ -254,6 +306,8 @@ function openDelivery() {
 
     watchDelivery();
 
+    listenForMessages();
+
 }
 
 
@@ -261,11 +315,14 @@ function openDelivery() {
 
 function watchDelivery() {
 
-    if (!deliveryKey) return;
+    if (!deliveryKey) {
+        return;
+    }
 
 
     db.ref(
-        "deliveries/" + deliveryKey
+        "deliveries/" +
+        deliveryKey
     )
     .on("value", snapshot => {
 
@@ -273,7 +330,9 @@ function watchDelivery() {
             snapshot.val();
 
 
-        if (!data) return;
+        if (!data) {
+            return;
+        }
 
 
         document
@@ -288,6 +347,8 @@ function watchDelivery() {
             );
 
 
+        // WAITING
+
         if (data.status === "WAITING") {
 
             message.textContent =
@@ -296,10 +357,13 @@ function watchDelivery() {
         }
 
 
+        // ACCEPTED
+
         if (data.status === "ACCEPTED") {
 
             message.textContent =
                 "A rider accepted your request.";
+
 
             document
             .getElementById("chatBox")
@@ -307,12 +371,15 @@ function watchDelivery() {
 
         }
 
+
+        // ON THE WAY
 
         if (data.status === "ON_THE_WAY") {
 
             message.textContent =
                 "Your rider is on the way.";
 
+
             document
             .getElementById("chatBox")
             .classList.remove("hidden");
@@ -320,13 +387,53 @@ function watchDelivery() {
         }
 
 
+        // DELIVERED
+
         if (data.status === "DELIVERED") {
 
-            message.textContent =
-                "Your delivery is complete.";
+            if (!deliveredHandled) {
+
+                deliveredHandled = true;
+
+
+                message.textContent =
+                    "Your delivery is complete.";
+
+
+                document
+                .getElementById("chatBox")
+                .classList.add("hidden");
+
+
+                document
+                .getElementById("locationBtn")
+                .classList.add("hidden");
+
+
+                setTimeout(() => {
+
+                    // REMOVE ACTIVE DELIVERY
+
+                    localStorage.removeItem(
+                        "thcDeliveryKey"
+                    );
+
+
+                    deliveryKey = null;
+
+
+                    // RETURN TO NAME FORM
+
+                    window.location.reload();
+
+                }, 3000);
+
+            }
 
         }
 
+
+        // LOCATION STATUS
 
         if (
             data.latitude &&
@@ -420,7 +527,9 @@ function sendMessage() {
         input.value.trim();
 
 
-    if (!text) return;
+    if (!text) {
+        return;
+    }
 
 
     db.ref(
@@ -473,13 +582,151 @@ document
 
 // RECEIVE MESSAGES
 
-if (deliveryKey) {
+function listenForMessages() {
 
-    openDelivery();
+    if (!deliveryKey) {
+        return;
+    }
+
+
+    const chatRef =
+        db.ref(
+            "deliveries/" +
+            deliveryKey +
+            "/chat"
+        );
+
+
+    chatRef.off("value");
+
+
+    chatRef.on("value", snapshot => {
+
+        const messages =
+            snapshot.val() || {};
+
+
+        const container =
+            document.getElementById(
+                "messages"
+            );
+
+
+        container.innerHTML = "";
+
+
+        Object
+        .values(messages)
+        .forEach(message => {
+
+            const messageDiv =
+                document.createElement(
+                    "div"
+                );
+
+
+            messageDiv.className =
+                message.sender === "customer"
+                ? "bg-green-100 p-2 rounded-xl text-sm"
+                : "bg-blue-100 p-2 rounded-xl text-sm";
+
+
+            messageDiv.textContent =
+                (
+                    message.sender === "customer"
+                    ? "You: "
+                    : "Rider: "
+                ) +
+                message.text;
+
+
+            container.appendChild(
+                messageDiv
+            );
+
+        });
+
+
+        container.scrollTop =
+            container.scrollHeight;
+
+    });
 
 }
 
-</script>
 
-</body>
-</html>
+// RESUME ACTIVE DELIVERY
+
+async function resumeDelivery() {
+
+    if (!deliveryKey) {
+        return;
+    }
+
+
+    try {
+
+        const snapshot =
+            await db.ref(
+                "deliveries/" +
+                deliveryKey
+            ).once("value");
+
+
+        const data =
+            snapshot.val();
+
+
+        // DELIVERY RECORD DOES NOT EXIST
+
+        if (!data) {
+
+            localStorage.removeItem(
+                "thcDeliveryKey"
+            );
+
+            deliveryKey = null;
+
+            return;
+        }
+
+
+        // DELIVERY WAS ALREADY COMPLETED
+
+        if (data.status === "DELIVERED") {
+
+            localStorage.removeItem(
+                "thcDeliveryKey"
+            );
+
+            deliveryKey = null;
+
+            return;
+        }
+
+
+        // DELIVERY IS STILL ACTIVE
+
+        openDelivery();
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to resume delivery:",
+            error
+        );
+
+    }
+
+}
+
+
+// START SESSION CHECK
+
+resumeDelivery();
+        
+    </script>
+    
+    </body>
+    </html>
