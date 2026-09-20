@@ -160,12 +160,15 @@
     const auth = firebase.auth();
     const db = firebase.database();
         
-    let deliveryKey =
-        localStorage.getItem("thcDeliveryKey");
-        
-        let deliveredHandled = false;
-    
-  // REQUEST RIDER
+  // DELIVERY SESSION
+
+let deliveryKey =
+    localStorage.getItem("thcDeliveryKey");
+
+let deliveredHandled = false;
+
+
+// REQUEST RIDER
 
 document
 .getElementById("requestBtn")
@@ -177,14 +180,56 @@ document
     const last =
         document.getElementById("surname").value.trim();
 
+
     if (!first || !last) {
 
-        alert("Please enter your first name and surname.");
+        alert(
+            "Please enter your first name and surname."
+        );
 
         return;
     }
 
+
     try {
+
+        // CHECK FOR EXISTING ACTIVE DELIVERY
+
+        if (deliveryKey) {
+
+            const existingSnapshot =
+                await db.ref(
+                    "deliveries/" +
+                    deliveryKey
+                ).once("value");
+
+            const existingData =
+                existingSnapshot.val();
+
+
+            if (
+                existingData &&
+                existingData.status !== "DELIVERED"
+            ) {
+
+                openDelivery();
+
+                return;
+            }
+
+
+            // OLD DELIVERY IS GONE
+            // OR ALREADY DELIVERED
+
+            localStorage.removeItem(
+                "thcDeliveryKey"
+            );
+
+            deliveryKey = null;
+        }
+
+
+        // CUSTOMER AUTHENTICATION
 
         const login =
             await auth.signInAnonymously();
@@ -192,8 +237,12 @@ document
         const customerUid =
             login.user.uid;
 
+
+        // CREATE NEW DELIVERY
+
         const delivery =
             db.ref("deliveries").push();
+
 
         await delivery.set({
 
@@ -211,15 +260,23 @@ document
 
         });
 
+
+        // SAVE DELIVERY KEY
+
         deliveryKey =
             delivery.key;
+
 
         localStorage.setItem(
             "thcDeliveryKey",
             deliveryKey
         );
 
+
+        // OPEN ACTIVE DELIVERY
+
         openDelivery();
+
 
     } catch (error) {
 
@@ -231,352 +288,444 @@ document
     }
 
 });
-    
-    // OPEN DELIVERY
-    
-    function openDelivery() {
-    
-        document
-        .getElementById("requestBox")
-        .classList.add("hidden");
-    
-    
-        document
-        .getElementById("deliveryBox")
-        .classList.remove("hidden");
-    
-    
-          watchDelivery();
-        listenForMessages();
-    
-    }
-    
-    
-    // WATCH DELIVERY
-    
-    function watchDelivery() {
-    
-        if (!deliveryKey) return;
-    
-    
-        db.ref(
-            "deliveries/" + deliveryKey
-        )
-        .on("value", snapshot => {
-    
-            const data =
-                snapshot.val();
-    
-    
-            if (!data) return;
-    
-    
-            document
-            .getElementById("status")
-            .textContent =
-                data.status;
-    
-    
-            const message =
-                document.getElementById(
-                    "statusMessage"
-                );
-    
-    
-            if (data.status === "WAITING") {
-    
-                message.textContent =
-                    "Waiting for a rider...";
-    
-            }
-    
-    
-            if (data.status === "ACCEPTED") {
-    
-                message.textContent =
-                    "A rider accepted your request.";
-    
-                document
-                .getElementById("chatBox")
-                .classList.remove("hidden");
-    
-            }
-    
-    
-            if (data.status === "ON_THE_WAY") {
-    
-                message.textContent =
-                    "Your rider is on the way.";
-    
-                document
-                .getElementById("chatBox")
-                .classList.remove("hidden");
-    
-            }
-    
-    
-           if (data.status === "DELIVERED") {
-    
-        if (!deliveredHandled) {
-    
-            deliveredHandled = true;
-    
-            message.textContent =
-                "Your delivery is complete.";
-    
-            document
-            .getElementById("chatBox")
-            .classList.add("hidden");
-    
-            document
-            .getElementById("locationBtn")
-            .classList.add("hidden");
-    
-            setTimeout(() => {
-    
-                localStorage.removeItem(
-                    "thcDeliveryKey"
-                );
-    
-                deliveryKey = null;
-    
-                window.location.reload();
-    
-            }, 3000);
-    
-             }
-    }
-});
+
+
+// OPEN DELIVERY
+
+function openDelivery() {
+
+    document
+    .getElementById("requestBox")
+    .classList.add("hidden");
+
+
+    document
+    .getElementById("deliveryBox")
+    .classList.remove("hidden");
+
+
+    watchDelivery();
+
+    listenForMessages();
+
 }
 
-// SHARE LOCATIONATION
-    
-    document
-    .getElementById("locationBtn")
-    .addEventListener("click", () => {
-    
-        if (!navigator.geolocation) {
-    
-            alert(
-                "GPS is not supported on this device."
-            );
-    
+
+// WATCH DELIVERY
+
+function watchDelivery() {
+
+    if (!deliveryKey) {
+        return;
+    }
+
+
+    db.ref(
+        "deliveries/" +
+        deliveryKey
+    )
+    .on("value", snapshot => {
+
+        const data =
+            snapshot.val();
+
+
+        if (!data) {
             return;
         }
-    
-    
-        navigator.geolocation.getCurrentPosition(
-    
-            async position => {
-    
-                const latitude =
-                    position.coords.latitude;
-    
-                const longitude =
-                    position.coords.longitude;
-    
-    
-                await db.ref(
-                    "deliveries/" +
-                    deliveryKey
-                )
-                .update({
-    
-                    latitude:
-                        latitude,
-    
-                    longitude:
-                        longitude
-    
-                });
-    
-    
-                alert(
-                    "Location shared with rider."
-                );
-    
-            },
-    
-            () => {
-    
-                alert(
-                    "Please allow location access."
-                );
-    
-            }
-    
-        );
-    
-    });
-    
-    
-    // SEND MESSAGE
-    
-    function sendMessage() {
-    
-        const input =
+
+
+        document
+        .getElementById("status")
+        .textContent =
+            data.status;
+
+
+        const message =
             document.getElementById(
-                "messageInput"
+                "statusMessage"
             );
-    
-    
-        const text =
-            input.value.trim();
-    
-    
-        if (!text) return;
-    
-    
+
+
+        // WAITING
+
+        if (data.status === "WAITING") {
+
+            message.textContent =
+                "Waiting for a rider...";
+
+        }
+
+
+        // ACCEPTED
+
+        if (data.status === "ACCEPTED") {
+
+            message.textContent =
+                "A rider accepted your request.";
+
+
+            document
+            .getElementById("chatBox")
+            .classList.remove("hidden");
+
+        }
+
+
+        // ON THE WAY
+
+        if (data.status === "ON_THE_WAY") {
+
+            message.textContent =
+                "Your rider is on the way.";
+
+
+            document
+            .getElementById("chatBox")
+            .classList.remove("hidden");
+
+        }
+
+
+        // DELIVERED
+
+        if (data.status === "DELIVERED") {
+
+            if (!deliveredHandled) {
+
+                deliveredHandled = true;
+
+
+                message.textContent =
+                    "Your delivery is complete.";
+
+
+                document
+                .getElementById("chatBox")
+                .classList.add("hidden");
+
+
+                document
+                .getElementById("locationBtn")
+                .classList.add("hidden");
+
+
+                setTimeout(() => {
+
+                    // REMOVE ACTIVE DELIVERY
+
+                    localStorage.removeItem(
+                        "thcDeliveryKey"
+                    );
+
+
+                    deliveryKey = null;
+
+
+                    // RETURN TO NAME FORM
+
+                    window.location.reload();
+
+                }, 3000);
+
+            }
+
+        }
+
+
+        // LOCATION STATUS
+
+        if (
+            data.latitude &&
+            data.longitude
+        ) {
+
+            document
+            .getElementById("locationMessage")
+            .textContent =
+                "Location shared with rider.";
+
+        }
+
+    });
+
+}
+
+
+// SHARE LOCATION
+
+document
+.getElementById("locationBtn")
+.addEventListener("click", () => {
+
+    if (!navigator.geolocation) {
+
+        alert(
+            "GPS is not supported on this device."
+        );
+
+        return;
+    }
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        async position => {
+
+            const latitude =
+                position.coords.latitude;
+
+            const longitude =
+                position.coords.longitude;
+
+
+            await db.ref(
+                "deliveries/" +
+                deliveryKey
+            )
+            .update({
+
+                latitude:
+                    latitude,
+
+                longitude:
+                    longitude
+
+            });
+
+
+            alert(
+                "Location shared with rider."
+            );
+
+        },
+
+        () => {
+
+            alert(
+                "Please allow location access."
+            );
+
+        }
+
+    );
+
+});
+
+
+// SEND MESSAGE
+
+function sendMessage() {
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+
+    const text =
+        input.value.trim();
+
+
+    if (!text) {
+        return;
+    }
+
+
+    db.ref(
+        "deliveries/" +
+        deliveryKey +
+        "/chat"
+    )
+    .push({
+
+        sender:
+            "customer",
+
+        text:
+            text,
+
+        timestamp:
+            firebase.database.ServerValue.TIMESTAMP
+
+    });
+
+
+    input.value = "";
+
+}
+
+
+document
+.getElementById("sendBtn")
+.addEventListener(
+    "click",
+    sendMessage
+);
+
+
+document
+.getElementById("messageInput")
+.addEventListener(
+    "keypress",
+    event => {
+
+        if (event.key === "Enter") {
+
+            sendMessage();
+
+        }
+
+    }
+);
+
+
+// RECEIVE MESSAGES
+
+function listenForMessages() {
+
+    if (!deliveryKey) {
+        return;
+    }
+
+
+    const chatRef =
         db.ref(
             "deliveries/" +
             deliveryKey +
             "/chat"
-        )
-        .push({
-    
-            sender:
-                "customer",
-    
-            text:
-                text,
-    
-            timestamp:
-                firebase.database.ServerValue.TIMESTAMP
-    
-        });
-    
-    
-        input.value = "";
-    
-    }
-    
-    
-    document
-    .getElementById("sendBtn")
-    .addEventListener(
-        "click",
-        sendMessage
-    );
-    
-    
-    document
-    .getElementById("messageInput")
-    .addEventListener(
-        "keypress",
-        event => {
-    
-            if (event.key === "Enter") {
-    
-                sendMessage();
-    
-            }
-    
-        }
-    );
-    
-    
-    // RECEIVE CHAT MESSAGES
-    
-    function listenForMessages() {
-    
-        if (!deliveryKey) return;
-    
-        const chatRef = db.ref(
-            "deliveries/" +
-            deliveryKey +
-            "/chat"
         );
-    
-        chatRef.off("value");
-    
-        chatRef.on("value", snapshot => {
-    
-            const messages =
-                snapshot.val() || {};
-    
-            const container =
-                document.getElementById(
-                    "messages"
+
+
+    chatRef.off("value");
+
+
+    chatRef.on("value", snapshot => {
+
+        const messages =
+            snapshot.val() || {};
+
+
+        const container =
+            document.getElementById(
+                "messages"
+            );
+
+
+        container.innerHTML = "";
+
+
+        Object
+        .values(messages)
+        .forEach(message => {
+
+            const messageDiv =
+                document.createElement(
+                    "div"
                 );
-    
-            container.innerHTML = "";
-    
-            Object
-            .values(messages)
-            .forEach(message => {
-    
-                const messageDiv =
-                    document.createElement("div");
-    
-                messageDiv.className =
+
+
+            messageDiv.className =
+                message.sender === "customer"
+                ? "bg-green-100 p-2 rounded-xl text-sm"
+                : "bg-blue-100 p-2 rounded-xl text-sm";
+
+
+            messageDiv.textContent =
+                (
                     message.sender === "customer"
-                    ? "bg-green-100 p-2 rounded-xl text-sm"
-                    : "bg-blue-100 p-2 rounded-xl text-sm";
-    
-                messageDiv.textContent =
-                    (message.sender === "customer"
-                        ? "You: "
-                        : "Rider: ") +
-                    message.text;
-    
-                container.appendChild(
-                    messageDiv
-                );
-    
-            });
-    
-            container.scrollTop =
-                container.scrollHeight;
-    
+                    ? "You: "
+                    : "Rider: "
+                ) +
+                message.text;
+
+
+            container.appendChild(
+                messageDiv
+            );
+
         });
-    
+
+
+        container.scrollTop =
+            container.scrollHeight;
+
+    });
+
+}
+
+
+// RESUME ACTIVE DELIVERY
+
+async function resumeDelivery() {
+
+    if (!deliveryKey) {
+        return;
     }
-    
-    
-    // RESUME ACTIVE DELIVERY
-    
-    async function resumeDelivery() {
-    
-        if (!deliveryKey) {
-            return;
-        }
-    
+
+
+    try {
+
         const snapshot =
             await db.ref(
                 "deliveries/" +
                 deliveryKey
             ).once("value");
-    
+
+
         const data =
             snapshot.val();
-    
+
+
+        // DELIVERY RECORD DOES NOT EXIST
+
         if (!data) {
-    
+
             localStorage.removeItem(
                 "thcDeliveryKey"
             );
-    
+
             deliveryKey = null;
-    
+
             return;
         }
-    
+
+
+        // DELIVERY WAS ALREADY COMPLETED
+
         if (data.status === "DELIVERED") {
-    
+
             localStorage.removeItem(
                 "thcDeliveryKey"
             );
-    
+
             deliveryKey = null;
-    
+
             return;
         }
-    
+
+
+        // DELIVERY IS STILL ACTIVE
+
         openDelivery();
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to resume delivery:",
+            error
+        );
+
     }
-    
-    resumeDelivery();
-    
+
+}
+
+
+// START SESSION CHECK
+
+resumeDelivery();
+        
     </script>
     
     </body>
