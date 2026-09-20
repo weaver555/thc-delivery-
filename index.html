@@ -165,12 +165,11 @@
         
         let deliveredHandled = false;
     
-    
-    // CHECK MY ORDER
+  // REQUEST RIDER
 
 document
 .getElementById("requestBtn")
-.addEventListener("click", async function () {
+.addEventListener("click", async () => {
 
     const first =
         document.getElementById("firstName").value.trim();
@@ -187,45 +186,12 @@ document
 
     try {
 
-        // CHECK FOR EXISTING ACTIVE DELIVERY
-        if (deliveryKey) {
-
-            const existingSnapshot =
-                await db.ref(
-                    "deliveries/" +
-                    deliveryKey
-                ).once("value");
-
-            const existingData =
-                existingSnapshot.val();
-
-            if (
-                existingData &&
-                existingData.status !== "DELIVERED"
-            ) {
-
-                openDelivery();
-
-                return;
-            }
-
-            // OLD DELIVERY DOES NOT EXIST
-            // OR IS ALREADY DELIVERED
-            localStorage.removeItem(
-                "thcDeliveryKey"
-            );
-
-            deliveryKey = null;
-        }
-
-        // SIGN IN CUSTOMER
         const login =
             await auth.signInAnonymously();
 
         const customerUid =
             login.user.uid;
 
-        // CREATE NEW DELIVERY
         const delivery =
             db.ref("deliveries").push();
 
@@ -258,14 +224,13 @@ document
     } catch (error) {
 
         alert(
-            "Unable to check order: " +
+            "Unable to request rider: " +
             error.message
         );
 
     }
 
 });
-    
     
     // OPEN DELIVERY
     
