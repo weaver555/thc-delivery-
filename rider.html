@@ -313,20 +313,6 @@ function loadCustomers() {
             Object.entries(data).forEach(
                 ([key, delivery]) => {
 
-                    const currentRider =
-                        auth.currentUser.uid;
-
-                    const isWaiting =
-                        delivery.status === "WAITING";
-
-                    const isAssignedRider =
-                        delivery.riderId === currentRider;
-
-                    if (
-                        !isWaiting &&
-                        !isAssignedRider
-                    ) return;
-
                     if (
                         delivery.status ===
                         "DELIVERED"
@@ -453,6 +439,8 @@ function loadCustomers() {
                         </div>
                     `;
 
+                    list.appendChild(card);
+
                     card.querySelector(
                         ".accept"
                     ).onclick = () => {
@@ -480,14 +468,10 @@ function loadCustomers() {
                         );
                     };
 
-                    if (isAssignedRider) {
-                        setupRiderChat(
-                            key,
-                            card
-                        );
-                    }
-
-                    list.appendChild(card);
+                    setupRiderChat(
+                        key,
+                        card
+                    );
 
                 }
             );
@@ -618,63 +602,34 @@ function setupRiderChat(key, card) {
 
 function updateStatus(key, status) {
 
-    const deliveryRef = db.ref("deliveries/" + key);
+    const update = {
+        status: status
+    };
 
     if (status === "ACCEPTED") {
 
-        deliveryRef.transaction(current => {
+        update.riderId =
+            auth.currentUser.uid;
 
-            if (!current) return current;
-
-            // Only WAITING orders can be accepted
-            if (current.status !== "WAITING") return;
-
-            current.status = "ACCEPTED";
-            current.riderId = auth.currentUser.uid;
-            current.acceptedAt = firebase.database.ServerValue.TIMESTAMP;
-
-            return current;
-
-        }).then(result => {
-
-            if (!result.committed) {
-                alert("This delivery has already been accepted by another rider.");
-            }
-
-        });
-
-        return;
+        update.acceptedAt =
+            firebase.database.ServerValue.TIMESTAMP;
     }
 
-    // ON THE WAY / DELIVERED
-    deliveryRef.once("value").then(snapshot => {
+    if (status === "ON_THE_WAY") {
 
-        const delivery = snapshot.val();
+        update.onTheWayAt =
+            firebase.database.ServerValue.TIMESTAMP;
+    }
 
-        if (!delivery) return;
+    if (status === "DELIVERED") {
 
-        // Only the assigned rider can continue
-        if (delivery.riderId !== auth.currentUser.uid) {
-            alert("This delivery is assigned to another rider.");
-            return;
-        }
+        update.deliveredAt =
+            firebase.database.ServerValue.TIMESTAMP;
+    }
 
-        const update = {
-            status: status
-        };
-
-        if (status === "ON_THE_WAY") {
-            update.onTheWayAt =
-                firebase.database.ServerValue.TIMESTAMP;
-        }
-
-        if (status === "DELIVERED") {
-            update.deliveredAt =
-                firebase.database.ServerValue.TIMESTAMP;
-        }
-
-        deliveryRef.update(update);
-    });
+    db.ref(
+        "deliveries/" + key
+    ).update(update);
 }
 
 </script>
