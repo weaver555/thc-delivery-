@@ -289,256 +289,207 @@ document
 
 
 // LOAD CUSTOMERS
-
 function loadCustomers() {
 
-
-db.ref("deliveries")
-.on(
-"value",
-snapshot => {
-
-
-const data =
-snapshot.val() || {};
-
-
-const list =
-document.getElementById(
-"customerList"
-);
-
-
-list.innerHTML =
-"";
-
-
-let active =
-0;
-
-let waiting =
-0;
-
-let onWay =
-0;
-
-
-Object
-.entries(data)
-.forEach(
-([key, delivery]) => {
-
-
-if (
-delivery.status ===
-"DELIVERED"
-) {
-
-return;
-
-}
-
-
-active++;
-
-
-if (
-delivery.status ===
-"WAITING"
-) {
-
-waiting++;
-
-}
-
-
-if (
-delivery.status ===
-"ON_THE_WAY"
-) {
-
-onWay++;
-
-}
-
-
-const card =
-document.createElement(
-"div"
-);
-
-
-card.className =
-"bg-white p-5 rounded-2xl shadow";
-
-
-const hasLocation =
-delivery.latitude &&
-delivery.longitude;
-
-
-const map =
-hasLocation
-?
-"https://www.google.com/maps?q=" +
-delivery.latitude +
-"," +
-delivery.longitude
-:
-"#";
-
-
-card.innerHTML = `
-
-<div class="text-xl font-black">
-
-${delivery.customerName || "Customer"}
-
-</div>
-
-
-<div class="text-sm text-gray-500 mt-1">
-
-Status:
-${delivery.status}
-
-</div>
-
-
-<div class="grid grid-cols-2 gap-2 mt-4">
-
-
-<button
-class="accept bg-green-600 text-white p-3 rounded-xl font-bold"
->
-ACCEPT
-</button>
-
-
-<a
-href="${map}"
-target="_blank"
-class="${
-hasLocation
-?
-"bg-blue-600 text-white"
-:
-"bg-gray-200 text-gray-400 pointer-events-none"
-}
-p-3 rounded-xl font-bold text-center"
->
-OPEN MAP
-</a>
-
-
-</div>
-
-
-<div class="grid grid-cols-2 gap-2 mt-2">
-
-<button
-class="onway bg-gray-900 text-white p-3 rounded-xl font-bold"
->
-ON THE WAY
-</button>
-
-<button
-class="done bg-red-600 text-white p-3 rounded-xl font-bold"
->
-DELIVERED
-</button>
-
-</div>
-
-<!-- CHAT -->
-
-<div class="mt-4 border-t pt-4">
-
-<div class="text-sm font-bold mb-2">
-CHAT WITH CUSTOMER
-</div>
-
-<div
-class="chat-messages h-32 overflow-y-auto space-y-2 bg-gray-50 p-2 rounded-xl mb-2"
->
-</div>
-
-<div class="flex gap-2">
-
-<input
-class="chat-input flex-1 p-3 border rounded-xl"
-placeholder="Type message"
->
-
-<button
-class="chat-send bg-green-600 text-white px-4 rounded-xl font-bold"
->
-SEND
-</button>
-
-</div>
-
-</div>
-`;
-
-
-list.appendChild(card);
-
-
-card
-.querySelector(".accept")
-.onclick =
-() =>
-updateStatus(
-key,
-"ACCEPTED"
-);
-
-
-card
-.querySelector(".onway")
-.onclick =
-() =>
-updateStatus(
-key,
-"ON_THE_WAY"
-);
-
-
-card
-.querySelector(".done")
-.onclick =
-() =>
-updateStatus(
-key,
-"DELIVERED"
-);
-
-setupRiderChat(key, card);
-
-});
-
-
-document
-.getElementById("totalCount")
-.textContent =
-active;
-
-
-document
-.getElementById("waitingCount")
-.textContent =
-waiting;
-
-
-document
-.getElementById("wayCount")
-.textContent =
-onWay;
-
-
-});
-
+    db.ref("deliveries")
+    .on(
+        "value",
+        snapshot => {
+
+            const data =
+                snapshot.val() || {};
+
+            const list =
+                document.getElementById(
+                    "customerList"
+                );
+
+            list.innerHTML = "";
+
+            let active = 0;
+            let waiting = 0;
+            let onWay = 0;
+
+            Object.entries(data).forEach(
+                ([key, delivery]) => {
+
+                    if (
+                        delivery.status ===
+                        "DELIVERED"
+                    ) return;
+
+                    active++;
+
+                    if (
+                        delivery.status ===
+                        "WAITING"
+                    ) {
+                        waiting++;
+                    }
+
+                    if (
+                        delivery.status ===
+                        "ON_THE_WAY"
+                    ) {
+                        onWay++;
+                    }
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "bg-white p-5 rounded-2xl shadow";
+
+                    const hasLocation =
+                        delivery.latitude &&
+                        delivery.longitude;
+
+                    const map =
+                        hasLocation
+                        ?
+                        "https://www.google.com/maps?q=" +
+                        delivery.latitude +
+                        "," +
+                        delivery.longitude
+                        :
+                        "#";
+
+                    card.innerHTML = `
+
+                        <div class="text-xl font-black">
+                            ${delivery.customerName || "Customer"}
+                        </div>
+
+                        <div class="text-sm text-gray-500 mt-1">
+                            Status:
+                            ${delivery.status}
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+
+                            <button
+                                class="accept bg-green-600 text-white p-3 rounded-xl font-bold"
+                            >
+                                ACCEPT
+                            </button>
+
+                            <a
+                                href="${map}"
+                                target="_blank"
+                                class="${
+                                    hasLocation
+                                    ?
+                                    "bg-blue-600 text-white"
+                                    :
+                                    "bg-gray-200 text-gray-400 pointer-events-none"
+                                }
+                                p-3 rounded-xl font-bold text-center"
+                            >
+                                OPEN MAP
+                            </a>
+
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+
+                            <button
+                                class="onway bg-gray-900 text-white p-3 rounded-xl font-bold"
+                            >
+                                ON THE WAY
+                            </button>
+
+                            <button
+                                class="done bg-red-600 text-white p-3 rounded-xl font-bold"
+                            >
+                                DELIVERED
+                            </button>
+
+                        </div>
+
+                        <!-- CHAT -->
+
+                        <div class="mt-4 border-t pt-4">
+
+                            <div class="text-sm font-bold mb-2">
+                                CHAT WITH CUSTOMER
+                            </div>
+
+                            <div
+                                class="chat-messages h-32 overflow-y-auto space-y-2 bg-gray-50 p-2 rounded-xl mb-2"
+                            >
+                            </div>
+
+                            <div class="flex gap-2">
+
+                                <input
+                                    class="chat-input flex-1 p-3 border rounded-xl"
+                                    placeholder="Type message"
+                                >
+
+                                <button
+                                    class="chat-send bg-green-600 text-white px-4 rounded-xl font-bold"
+                                >
+                                    SEND
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                    list.appendChild(card);
+
+                    card.querySelector(
+                        ".accept"
+                    ).onclick = () => {
+                        updateStatus(
+                            key,
+                            "ACCEPTED"
+                        );
+                    };
+
+                    card.querySelector(
+                        ".onway"
+                    ).onclick = () => {
+                        updateStatus(
+                            key,
+                            "ON_THE_WAY"
+                        );
+                    };
+
+                    card.querySelector(
+                        ".done"
+                    ).onclick = () => {
+                        updateStatus(
+                            key,
+                            "DELIVERED"
+                        );
+                    };
+
+                    setupRiderChat(
+                        key,
+                        card
+                    );
+
+                }
+            );
+
+            document.getElementById(
+                "totalCount"
+            ).textContent = active;
+
+            document.getElementById(
+                "waitingCount"
+            ).textContent = waiting;
+
+            document.getElementById(
+                "wayCount"
+            ).textContent = onWay;
+
+        }
+    );
 }
 
   // RIDER CHAT
@@ -649,62 +600,36 @@ function setupRiderChat(key, card) {
 
 // UPDATE STATUS
 
-function updateStatus(
-key,
-status
-) {
+function updateStatus(key, status) {
 
+    const update = {
+        status: status
+    };
 
-const update = {
+    if (status === "ACCEPTED") {
 
-status:
-status
+        update.riderId =
+            auth.currentUser.uid;
 
-};
+        update.acceptedAt =
+            firebase.database.ServerValue.TIMESTAMP;
+    }
 
+    if (status === "ON_THE_WAY") {
 
-if (
-status ===
-"ACCEPTED"
-) {
+        update.onTheWayAt =
+            firebase.database.ServerValue.TIMESTAMP;
+    }
 
-update.riderId =
-auth.currentUser.uid;
+    if (status === "DELIVERED") {
 
-update.acceptedAt =
-firebase.database.ServerValue.TIMESTAMP;
+        update.deliveredAt =
+            firebase.database.ServerValue.TIMESTAMP;
+    }
 
-}
-
-
-if (
-status ===
-"ON_THE_WAY"
-) {
-
-update.onTheWayAt =
-firebase.database.ServerValue.TIMESTAMP;
-
-}
-
-
-if (
-status ===
-"DELIVERED"
-) {
-
-update.deliveredAt =
-firebase.database.ServerValue.TIMESTAMP;
-
-}
-
-
-db.ref(
-"deliveries/" +
-key
-)
-.update(update);
-
+    db.ref(
+        "deliveries/" + key
+    ).update(update);
 }
 
 </script>
